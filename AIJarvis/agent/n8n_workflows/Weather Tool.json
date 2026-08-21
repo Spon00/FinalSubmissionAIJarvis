@@ -1,0 +1,140 @@
+{
+  "name": "Weather Tool",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "jarvis/weather",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        0,
+        0
+      ],
+      "id": "d8217042-ef05-4990-861c-ee5e944c05e2",
+      "name": "Webhook",
+      "webhookId": "691ca3bf-be45-40da-b95b-7efcc24d122d"
+    },
+    {
+      "parameters": {
+        "url": "https://geocoding-api.open-meteo.com/v1/search",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "name",
+              "value": "={{ $json.body.city }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.5,
+      "position": [
+        224,
+        0
+      ],
+      "id": "877941a4-f5d7-4805-adcf-12ca8cb29b26",
+      "name": "HTTP Request"
+    },
+    {
+      "parameters": {
+        "url": "https://api.open-meteo.com/v1/forecast",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "latitude",
+              "value": "={{ $json.results[0].latitude }}"
+            },
+            {
+              "name": "longitude",
+              "value": "={{ $json.results[0].longitude }}"
+            },
+            {
+              "name": "current",
+              "value": "temperature_2m,relative_humidity_2m,weather_code,wind_speed_10m"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.5,
+      "position": [
+        448,
+        0
+      ],
+      "id": "497ff134-d905-420c-b85d-9f81fc0cc1db",
+      "name": "HTTP Request1"
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={\n  \"temperature\": \"{{ $json.current.temperature_2m }}\",\n\"temperature_unit\": \"degrees celcius\",\n  \"humidity\": \"{{ $json.current.relative_humidity_2m }}\",\n  \"wind_speed\": \"{{ $json.current.wind_speed_10m }}\",\n\"wind_speed_unit\": \"km/h\",\n  \"weather_code\": \"{{ $json.current.weather_code }}\"\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.5,
+      "position": [
+        672,
+        0
+      ],
+      "id": "bcdb6b61-1c2e-4f4b-bd44-e23a1994c263",
+      "name": "Respond to Webhook"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP Request": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP Request1": {
+      "main": [
+        [
+          {
+            "node": "Respond to Webhook",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate",
+    "availableInMCP": false
+  },
+  "versionId": "a93999ac-dc96-414f-beda-14fe77dede50",
+  "meta": {
+    "instanceId": "933093feec5fc2eb32dbafab89d25e2e4c1bbcd8347b47ed2cdcf904060e5629"
+  },
+  "nodeGroups": [],
+  "id": "DnyaaXqQ7g68IR78",
+  "tags": []
+}
